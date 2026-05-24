@@ -2,22 +2,31 @@ name: Java CI
 
 on:
   push:
-    branches:
-      - main
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
 
 jobs:
-  build:
-
+  test:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v3
 
-      - name: Set up Java
-        uses: actions/setup-java@v4
+      - name: Set up JDK 11
+        uses: actions/setup-java@v3
         with:
-          distribution: temurin
-          java-version: '17'
+          java-version: '11'
+          distribution: 'temurin'
 
-      - name: Compile Java
-        run: javac *.java
+      - name: Download JUnit 5
+        run: |
+          wget https://repo1.maven.org/maven2/org/junit/platform/junit-platform-console-standalone/1.9.3/junit-platform-console-standalone-1.9.3.jar -O junit.jar
+
+      - name: Compile
+        run: |
+          find . -name "*.java" > sources.txt
+          javac -cp junit.jar @sources.txt
+
+      - name: Run Tests
+        run: java -jar junit.jar --class-path . --scan-class-path
